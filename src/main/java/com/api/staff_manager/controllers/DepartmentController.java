@@ -14,6 +14,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -27,6 +28,7 @@ public class DepartmentController {
     private final DepartmentService departmentService;
 
     @GetMapping
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<Page<DepartmentViewResponse>> getAllDepartments(
             @PageableDefault(sort = "departmentId", direction = Sort.Direction.ASC) Pageable pageable){
         log.info("Request received to fetch all departments");
@@ -34,18 +36,21 @@ public class DepartmentController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<DepartmentDetailsResponse> getDepartmentById(@PathVariable(value = "id") UUID id){
         log.info("Request received to fetch a department by id {}", id);
         return ResponseEntity.ok(departmentService.findById(id));
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<DepartmentViewResponse> saveDepartment(@RequestBody @Valid DepartmentRequest request){
         log.info("Request received to create a new department. Request body: {}", request);
         return ResponseEntity.status(HttpStatus.CREATED).body(departmentService.save(request));
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<DepartmentDetailsResponse> updateDepartment(@PathVariable(value = "id")UUID id,
                                                                    @RequestBody @Valid DepartmentRequest request){
         log.info("Request received to update the department with id {}. Request body: {}", id, request);
@@ -53,6 +58,7 @@ public class DepartmentController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteDepartment(@PathVariable(value = "id") UUID id){
         log.info("Request received to delete a department with id {}", id);
         departmentService.delete(id);

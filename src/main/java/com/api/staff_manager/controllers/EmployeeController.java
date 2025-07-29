@@ -17,6 +17,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -34,6 +35,7 @@ public class EmployeeController {
     private final PhotoService photoService;
 
     @GetMapping
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<Page<EmployeeViewResponse>> getAllEmployees(
             @PageableDefault(sort = "employeeId", direction = Sort.Direction.ASC) Pageable pageable){
         log.info("Request received to fetch all employees");
@@ -41,12 +43,14 @@ public class EmployeeController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<EmployeeDetailsResponse> getEmployeeById(@PathVariable(value = "id")UUID id){
         log.info("Request received to fetch an employee by id {}", id);
         return ResponseEntity.ok(employeeService.findById(id));
     }
 
     @GetMapping("/{id}/photo")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<Resource> getEmployeePhotoById(@PathVariable(value = "id") UUID id,
                                                               HttpServletRequest servletRequest) throws IOException {
         log.info("Request received to fetch photo of employee with id {}", id);
@@ -56,12 +60,14 @@ public class EmployeeController {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<EmployeeViewResponse> saveEmployee(@RequestBody @Valid EmployeeRequest request){
         log.info("Request received to create a new employee. Request body: {}", request);
         return ResponseEntity.status(HttpStatus.CREATED).body(employeeService.save(request));
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<EmployeeDetailsResponse> updateEmployee(@PathVariable(value = "id") UUID id,
                                                                   @RequestBody @Valid EmployeeRequest request){
         log.info("Request received to update the employee with id {}. Request body: {}", id, request);
@@ -69,6 +75,7 @@ public class EmployeeController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteEmployee(@PathVariable(value = "id") UUID id){
         log.info("Request received to delete an employee with id {}", id);
         employeeService.delete(id);
@@ -76,6 +83,7 @@ public class EmployeeController {
     }
 
     @PostMapping("/{id}/photo")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<EmployeeDetailsResponse> uploadPhoto(@PathVariable(value = "id") UUID id,
                                                                @RequestParam("file") MultipartFile file){
         log.info("Request received to create a new photo to employee with id {}", id);
@@ -86,6 +94,7 @@ public class EmployeeController {
     }
 
     @DeleteMapping("/{id}/photo")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deletePhotoByEmployeeId(@PathVariable(value = "id") UUID id){
         log.info("Request received to delete an employee photo with id {}", id);
         photoService.deletePhoto(id);

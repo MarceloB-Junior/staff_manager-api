@@ -8,9 +8,7 @@ import java.util.UUID;
 public record EmployeeViewResponse(
         @JsonProperty(value = "employee_id")
         UUID employeeId,
-        String name,
-        String position,
-        BigDecimal salary,
+        String name, String position, BigDecimal salary,
         @JsonProperty(value = "department_id")
         UUID departmentId
 ) {
