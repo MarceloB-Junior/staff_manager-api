@@ -41,6 +41,7 @@ public class WebSecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(HttpMethod.POST,"/api/v1/users","/api/v1/auth/login").permitAll()
+                        .requestMatchers("/swagger-ui/**","/v3/api-docs*/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(e -> e
