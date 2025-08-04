@@ -293,6 +293,11 @@ public class EmployeeController {
                             content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiError.class))
                     ),
                     @ApiResponse(
+                            responseCode = "415",
+                            description = "Unsupported file type",
+                            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiError.class))
+                    ),
+                    @ApiResponse(
                             responseCode = "401",
                             description = "Unauthorized",
                             content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiError.class))

@@ -53,7 +53,7 @@ public class UserServiceImpl implements UserService {
         user.setRole(RoleEnum.USER);
 
         var savedUser = userRepository.save(user);
-        log.debug("Successfully saved user with email: {}", request.email());
+        log.debug("Successfully saved user with email: {}", savedUser.getEmail());
         return userMapper.toSummaryResponse(savedUser);
     }
 
