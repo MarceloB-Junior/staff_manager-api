@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -39,6 +40,7 @@ import java.util.UUID;
 @Log4j2
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/employees")
+@Tag(name = "Employees", description = "Endpoints related to employee management")
 public class EmployeeController {
 
     private final EmployeeService employeeService;
