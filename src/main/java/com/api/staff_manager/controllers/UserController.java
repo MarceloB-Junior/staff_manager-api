@@ -1,10 +1,12 @@
 package com.api.staff_manager.controllers;
 
-import com.api.staff_manager.dtos.requests.DepartmentRequest;
-import com.api.staff_manager.dtos.responses.DepartmentDetailsResponse;
-import com.api.staff_manager.dtos.responses.DepartmentViewResponse;
+import com.api.staff_manager.dtos.requests.UserCreationRequest;
+import com.api.staff_manager.dtos.requests.UserUpdateRequest;
+import com.api.staff_manager.dtos.responses.UserDetailsResponse;
+import com.api.staff_manager.dtos.responses.UserSummaryResponse;
+import com.api.staff_manager.dtos.responses.UserViewResponse;
 import com.api.staff_manager.exceptions.dto.ApiError;
-import com.api.staff_manager.services.DepartmentService;
+import com.api.staff_manager.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
@@ -25,6 +27,7 @@ import org.springframework.data.web.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -32,28 +35,29 @@ import java.util.UUID;
 @RestController
 @Log4j2
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/departments")
-@Tag(name = "Departments", description = "Endpoints related to department management")
-public class DepartmentController {
+@RequestMapping("/api/v1/users")
+@Tag(name = "Users", description = "Endpoints related to user management")
+public class UserController {
 
-    private final DepartmentService departmentService;
+    private final UserService userService;
 
     @Operation(
-            summary = "Get all departments",
-            description = "Get all departments from the Staff Manager API",
+            summary = "Get all users",
+            description = "Get all users from the Staff Manager API",
             security = @SecurityRequirement(name = "Bearer Authentication")
     )
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
-                    description = "Successfully retrieved departments",
+                    description = "Successfully retrieved users",
                     content = @Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = PagedModel.class),
                             examples = @ExampleObject(value =
-                                    "{\"content\":[{\"department_id\":\"3fa85f64-5717-4562-b3fc-2c963f66afa6\"," +
-                                            "\"name\":\"string\"}],\"page\":{\"size\":10,\"number\":0,\"totalElements\":1," +
-                                            "\"totalPages\":1}}"
+                                    "{\"content\":[{\"user_id\":\"3fa85f64-5717-4562-b3fc-2c963f66afa6\"," +
+                                            "\"name\":\"Anna Doe\",\"email\":\"anna.doe@example.com\"," +
+                                            "\"role\":\"USER\"}],\"page\":{\"size\":10,\"number\":0," +
+                                            "\"totalElements\":1,\"totalPages\":1}}"
                             )
                     )
             ),
@@ -61,68 +65,39 @@ public class DepartmentController {
                     responseCode = "401",
                     description = "Unauthorized",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiError.class))
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Forbidden",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiError.class))
             )
     })
     @GetMapping
-    @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<Page<DepartmentViewResponse>> getAllDepartments(@ParameterObject
-             @PageableDefault(sort = "departmentId", direction = Sort.Direction.ASC) Pageable pageable) {
-        log.info("Request received to fetch all departments");
-        return ResponseEntity.ok(departmentService.findAll(pageable));
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Page<UserViewResponse>> getAllUsers(@ParameterObject
+            @PageableDefault(sort = "userId", direction = Sort.Direction.ASC) Pageable pageable){
+        log.info("Request received to fetch all users");
+        return ResponseEntity.ok(userService.findAll(pageable));
     }
 
     @Operation(
-            summary = "Get one department by id",
-            description = "Get a department from the Staff Manager API",
+            summary = "Get one user by id",
+            description = "Get user from the Staff Manager API",
             security = @SecurityRequirement(name = "Bearer Authentication")
     )
     @ApiResponses(
             value = {
                     @ApiResponse(
                             responseCode = "200",
-                            description = "Successfully retrieved department",
+                            description = "Successfully retrieved user",
                             content = @Content(
                                     mediaType = "application/json",
-                                    schema = @Schema(implementation = DepartmentDetailsResponse.class)
+                                    schema = @Schema(implementation = UserDetailsResponse.class)
                             )
                     ),
                     @ApiResponse(
                             responseCode = "404",
-                            description = "Department not found",
-                            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiError.class))
-                    ),
-                    @ApiResponse(
-                            responseCode = "401",
-                            description = "Unauthorized",
-                            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiError.class))
-                    )
-            }
-    )
-    @GetMapping("/{id}")
-    @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<DepartmentDetailsResponse> getDepartmentById(@PathVariable(value = "id") UUID id) {
-        log.info("Request received to fetch a department by id {}", id);
-        return ResponseEntity.ok(departmentService.findById(id));
-    }
-
-    @Operation(
-            summary = "Create a new department",
-            description = "Create a new department from the Staff Manager API",
-            security = @SecurityRequirement(name = "Bearer Authentication")
-    )
-    @ApiResponses(
-            value = {
-                    @ApiResponse(
-                            responseCode = "201",
-                            description = "Successfully created a department",
-                            content = @Content(
-                                    mediaType = "application/json",
-                                    schema = @Schema(implementation = DepartmentViewResponse.class)
-                            )
-                    ),
-                    @ApiResponse(
-                            responseCode = "409",
-                            description = "Department already exists",
+                            description = "User not found",
                             content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiError.class))
                     ),
                     @ApiResponse(
@@ -137,36 +112,98 @@ public class DepartmentController {
                     )
             }
     )
-    @PostMapping
+    @GetMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<DepartmentViewResponse> saveDepartment(@RequestBody @Valid DepartmentRequest request) {
-        log.info("Request received to create a new department. Request body: {}", request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(departmentService.save(request));
+    public ResponseEntity<UserDetailsResponse> getUserById(@PathVariable(value = "id") UUID id){
+        log.info("Request received to fetch a user by id {}", id);
+        return ResponseEntity.ok(userService.findById(id));
     }
 
     @Operation(
-            summary = "Update a department",
-            description = "Update a department from the Staff Manager API",
+            summary = "Get authenticated user details",
+            description = "Get authenticated user details from the Staff Manager API",
             security = @SecurityRequirement(name = "Bearer Authentication")
     )
     @ApiResponses(
             value = {
                     @ApiResponse(
                             responseCode = "200",
-                            description = "Successfully updated a department",
+                            description = "Successfully retrieved user details",
                             content = @Content(
                                     mediaType = "application/json",
-                                    schema = @Schema(implementation = DepartmentDetailsResponse.class)
+                                    schema = @Schema(implementation = UserDetailsResponse.class)
+                            )
+                    ),
+                    @ApiResponse(
+                            responseCode = "404",
+                            description = "User not found",
+                            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiError.class))
+                    ),
+                    @ApiResponse(
+                            responseCode = "401",
+                            description = "Unauthorized",
+                            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiError.class))
+                    )
+            }
+    )
+    @GetMapping("/me")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<UserDetailsResponse> getUserDetails(Authentication authentication){
+        log.info("Request received to fetch a user by email {}", authentication.getName());
+        return ResponseEntity.ok(userService.findByEmail(authentication.getName()));
+    }
+
+    @Operation(
+            summary = "Create a new user",
+            description = "Create a new user from the Staff Manager API"
+    )
+    @ApiResponses(
+            value = {
+                    @ApiResponse(
+                            responseCode = "201",
+                            description = "Successfully created user",
+                            content = @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(implementation = UserSummaryResponse.class)
                             )
                     ),
                     @ApiResponse(
                             responseCode = "409",
-                            description = "Another department with the same name already exists",
+                            description = "User already exists",
+                            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiError.class))
+                    )
+            }
+    )
+    @PostMapping
+    @PreAuthorize("permitAll()")
+    public ResponseEntity<UserSummaryResponse> saveUser(@RequestBody @Valid UserCreationRequest request){
+        log.info("Request received to create a new user with email: {}", request.email());
+        return ResponseEntity.status(HttpStatus.CREATED).body(userService.save(request));
+    }
+
+    @Operation(
+            summary = "Update user",
+            description = "Update user from the Staff Manager API",
+            security = @SecurityRequirement(name = "Bearer Authentication")
+    )
+    @ApiResponses(
+            value = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Successfully updated user",
+                            content = @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(implementation = UserDetailsResponse.class)
+                            )
+                    ),
+                    @ApiResponse(
+                            responseCode = "409",
+                            description = "Another user with the same email already exists",
                             content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiError.class))
                     ),
                     @ApiResponse(
                             responseCode = "404",
-                            description = "Department not found",
+                            description = "User not found",
                             content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiError.class))
                     ),
                     @ApiResponse(
@@ -183,26 +220,26 @@ public class DepartmentController {
     )
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<DepartmentDetailsResponse> updateDepartment(@PathVariable(value = "id") UUID id,
-                                                                      @RequestBody @Valid DepartmentRequest request) {
-        log.info("Request received to update the department with id {}. Request body: {}", id, request);
-        return ResponseEntity.ok(departmentService.update(request, id));
+    public ResponseEntity<UserDetailsResponse> updateUser(@PathVariable(value = "id") UUID id,
+                                                          @RequestBody @Valid UserUpdateRequest request){
+        log.info("Request received to update the user with id {}. Request body: {}", id, request);
+        return ResponseEntity.ok(userService.update(request, id));
     }
 
     @Operation(
-            summary = "Delete a department",
-            description = "Delete a department from the Staff Manager API",
+            summary = "Delete user",
+            description = "Delete user from the Staff Manager API",
             security = @SecurityRequirement(name = "Bearer Authentication")
     )
     @ApiResponses(
             value = {
                     @ApiResponse(
                             responseCode = "204",
-                            description = "Successfully deleted a department"
+                            description = "Successfully deleted user"
                     ),
                     @ApiResponse(
                             responseCode = "404",
-                            description = "Department not found",
+                            description = "User not found",
                             content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiError.class))
                     ),
                     @ApiResponse(
@@ -219,9 +256,9 @@ public class DepartmentController {
     )
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> deleteDepartment(@PathVariable(value = "id") UUID id) {
-        log.info("Request received to delete a department with id {}", id);
-        departmentService.delete(id);
+    public ResponseEntity<Void> deleteUser(@PathVariable(value = "id") UUID id){
+        log.info("Request received to delete a user with id {}", id);
+        userService.delete(id);
         return ResponseEntity.noContent().build();
     }
 }

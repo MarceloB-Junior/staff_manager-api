@@ -1,4 +1,3 @@
-
 # Staff Manager API
 
 ## Sobre
@@ -10,84 +9,102 @@ A Staff Manager API foi desenvolvida para ajudar o setor de Recursos Humanos (RH
 - [Funcionalidades](#funcionalidades)  
 - [Tecnologias](#tecnologias)  
 - [Como Rodar](#como-rodar)  
+- [Usuário Administrador Padrão](#usuário-administrador-padrão)  
 - [Endpoints da API](#endpoints-da-api)  
-  - [Departamentos](#departamentos)  
-  - [Funcionários](#funcionários)  
-  - [Fotos de Funcionários](#fotos-de-funcionários)  
+  - [Como testar e visualizar os endpoints via Swagger](#como-testar-e-visualizar-os-endpoints-via-swagger)  
 - [Estado Atual](#estado-atual)  
-- [Contribuição](#contribuição) 
+- [Contribuição](#contribuição)  
+- [Observações](#observações) 
 
 ## Funcionalidades
 
-- [✓] Cadastro, edição, consultas, exclusão de departamentos  
-- [✓] Gestão de funcionários, incluindo cadastro, edição, consulta, exclusão e upload/remoção de fotos  
-- [Ainda não Implementada] Implementação de segurança (Spring Security)  
-- [Ainda não Implementada] Documentação via Swagger  
-- [Ainda não Implementada] Testes unitários e de integração  
+- Cadastro, edição, consulta e exclusão de departamentos
+- Gestão de funcionários, envolvendo cadastro, edição, consulta, exclusão e upload/remoção de fotos
+- Cadastro, consulta, edição e exclusão de usuários
+- Configuração de segurança com Spring Security e filtro JWT customizado
+- Documentação via Swagger
+- [Ainda não implementados] testes unitários e de integração
 
 ## Tecnologias
 
 - Java 21  
-- Spring Boot 3.5.3 (Web, Data JPA, Validation) 
-- Maven  
-- MySQL
-- MapStruct  
+- Spring Boot 3.5.3 (Web, Data JPA, Security, Validation)  
+- MySQL  
 - Lombok  
+- MapStruct  
+- Auth0 Java JWT  
+- Maven  
+- SpringDoc OpenAPI/Swagger  
 
 ## Como Rodar
 
 1. Clone o repositório:  
-   ```
+   ```bash
    git clone https://github.com/MarceloB-Junior/staff_manager_api.git
    ```
 2. Certifique-se de que o Java 21 e o Maven estão instalados e configurados na sua máquina.  
 3. Configure o banco de dados MySQL local com a database `staff_manager_db` e ajuste as credenciais no arquivo `application.properties` caso necessário.  
 4. No terminal, navegue até o diretório do projeto e execute:  
-   ```
+   ```bash
    mvn clean install
    mvn spring-boot:run
    ```
 5. A aplicação estará disponível em `http://localhost:8080`.
 
+## Usuário Administrador Padrão
+
+Ao iniciar a aplicação, um usuário administrador padrão é criado automaticamente para facilitar o acesso inicial e a gestão do sistema.
+
+- Email: `john.doe@example.com`  
+- Senha: `pwd123`  
+
+> **Importante:** Por questões de segurança, recomenda-se alterar a senha padrão após o primeiro acesso ou configurar credenciais seguras para ambientes de produção.
+
 ## Endpoints da API
 
-### Departamentos
-- `GET /api/v1/departments`  
-  Lista todos os departamentos com paginação e ordenação.  
-- `GET /api/v1/departments/{id}`  
-  Retorna detalhes de um departamento pelo seu ID.  
-- `POST /api/v1/departments`  
-  Cria um novo departamento.  
-- `PUT /api/v1/departments/{id}`  
-  Atualiza um departamento existente.  
-- `DELETE /api/v1/departments/{id}`  
-  Remove um departamento pelo ID.
+### Como testar e visualizar os endpoints via Swagger
 
-### Funcionários
-- `GET /api/v1/employees`  
-  Lista todos os funcionários com paginação e ordenação.  
-- `GET /api/v1/employees/{id}`  
-  Retorna detalhes de um funcionário pelo seu ID.  
-- `POST /api/v1/employees`  
-  Cria um novo funcionário.  
-- `PUT /api/v1/employees/{id}`  
-  Atualiza um funcionário existente.  
-- `DELETE /api/v1/employees/{id}`  
-  Remove um funcionário pelo ID.  
+A API possui documentação interativa gerada automaticamente via Swagger. Você pode acessar e testar todos os endpoints diretamente pelo navegador:
 
-### Fotos de Funcionários
-- `GET /api/v1/employees/{id}/photo`  
-  Busca a foto do funcionário pelo ID.  
-- `POST /api/v1/employees/{id}/photo`  
-  Faz upload ou atualização da foto do funcionário.  
-- `DELETE /api/v1/employees/{id}/photo`  
-  Remove a foto do funcionário.
+- Abra o navegador e vá para:   
+  `http://localhost:8080/swagger-ui/index.html`
+
+- Na interface do Swagger, todos os endpoints estão organizados por grupos, com detalhamento de parâmetros, exemplos de requisição e resposta.  
+- Para testar um endpoint:  
+ 1. Clique no endpoint desejado para expandir.
+
+    ![1](https://live.staticflickr.com/65535/54704318543_4fe3ff800c_h.jpg)
+
+ 2. Clique em **Try it out** para personalizar os dados da requisição.
+
+    ![2](https://live.staticflickr.com/65535/54703289547_035e25c4f6_h.jpg)
+
+ 3. Preencha os parâmetros necessários (id, request body etc).
+
+    ![3](https://live.staticflickr.com/65535/54703289517_8c77046a74_h.jpg)
+
+ 4. Clique em **Execute** para executar a requisição.
+
+    ![4](https://live.staticflickr.com/65535/54703289382_c10a0749e3_h.jpg)
+
+ 5. Veja a resposta diretamente na interface.
+
+    ![5](https://live.staticflickr.com/65535/54704449655_c7b4f0230e_h.jpg)
+
+> **Dicas para o uso de autenticação via Swagger:**
+
+> - Para endpoints protegidos, é possível informar o token JWT no campo "Authorize", localizado no canto superior direito da interface Swagger.
+>
+>  ![6](https://live.staticflickr.com/65535/54704351344_d3ef872294_h.jpg)
+>
+> - Clique em **Authorize**, cole o token e confirme, assim o Swagger incluirá o token nas requisições subsequentes.
+>
+>  ![7](https://live.staticflickr.com/65535/54704449620_4d95dbf69f_h.jpg)
+  
 
 ## Estado Atual
 
-Este projeto está em desenvolvimento e atualmente a versão é a 0.0.1-SNAPSHOT.  
-
-> **ATENÇÃO:** Este projeto ainda não possui segurança implementada. Use em ambiente controlado e evite expor dados sensíveis até que a autenticação e autorização estejam funcionando.
+Este projeto está em desenvolvimento e atualmente a versão é a 0.0.1-SNAPSHOT.
 
 ## Contribuição
 
@@ -95,9 +112,9 @@ Para contribuir com o projeto, siga os passos abaixo:
 
 - Faça um fork do repositório  
 - Crie uma branch com a feature:  
-  ```
+  ```bash
   git checkout -b feature/nova-funcionalidade
-  ```  
+  ```
 - Faça commit das suas alterações e envie ao repositório remoto  
 - Abra um pull request para o branch principal do projeto  
 
@@ -105,3 +122,10 @@ Contribuições são muito bem-vindas! Por favor, siga as normas de código e pa
 
 Se precisar de ajuda ou quiser sugerir melhorias, fique à vontade para abrir issues no repositório.
 
+## Observações
+
+- As chaves secretas e configurações de tokens devem ser protegidas e configuradas via variáveis de ambiente.  
+- Os tokens JWT possuem tempos de validade diferentes:  
+  - O **access token** tem validade de **15 minutos** para minimizar riscos em caso de comprometimento.  
+  - O **refresh token** possui validade maior, de **24 horas**, e é utilizado para obter novos access tokens sem que o usuário precise se autenticar novamente.  
+- Para maior segurança, nos métodos da classe `AuthController` recomenda-se usar `.secure(true)` nos cookies em produção para garantir envio apenas via HTTPS, e ajustar `.sameSite("None")` quando for necessário permitir que os cookies funcionem entre domínios diferentes.
